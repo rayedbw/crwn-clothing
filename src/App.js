@@ -11,7 +11,7 @@ import { auth } from "./firebase/firebase.utils";
 import "./App.css";
 
 const useAuthenticatedUser = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [authUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
@@ -21,15 +21,15 @@ const useAuthenticatedUser = () => {
     return () => unsubscribe();
   }, []);
 
-  return currentUser;
+  return authUser;
 };
 
 const App = () => {
-  const currentUser = useAuthenticatedUser();
+  const authUser = useAuthenticatedUser();
 
   return (
     <Router>
-      <Header currentUser={currentUser} />
+      <Header authUser={authUser} />
       <Switch>
         <Route exact path="/">
           <HomePage />
