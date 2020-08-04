@@ -5,17 +5,27 @@ import Header from "./pages/header/header.component";
 import SignInAndSignUp from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
 import HomePage from "./pages/homepage/hompage.component";
 import Shop from "./pages/shop/shop.component";
-
-import { auth } from "./firebase/firebase.utils";
+import { auth, createUserProfile } from "./firebase/firebase.utils";
 
 import "./App.css";
 
 const useAuthenticatedUser = () => {
-  const [authUser, setCurrentUser] = useState(null);
+  const [authUser, setAuthUser] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
-      setCurrentUser(user);
+    const unsubscribe = auth.onAuthStateChanged(async authUser => {
+      if (authUser) {
+        const userRef = await createUserProfile(authUser);
+
+        userRef.onSnapshot(snapshot => {
+          setAuthUser({
+            id: snapshot.id,
+            ...snapshot.data(),
+          });
+        });
+      } else {
+        setAuthUser(null);
+      }
     });
 
     return () => unsubscribe();
