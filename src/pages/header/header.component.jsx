@@ -1,13 +1,15 @@
 import React from "react";
-
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { ReactComponent as Logo } from "../../assets/crown.svg";
 
+import { ReactComponent as Logo } from "../../assets/crown.svg";
 import { auth } from "../../firebase/firebase.utils";
 
 import "./header.styles.scss";
 
-const Header = ({ authUser }) => {
+const Header = () => {
+  const currentUser = useSelector(state => state.user.currentUser);
+  
   return (
     <div className="header">
       <Link to="/" className="logo-container">
@@ -20,7 +22,7 @@ const Header = ({ authUser }) => {
         <Link className="option" to="/contact">
           CONTACT
         </Link>
-        {authUser ? (
+        {currentUser ? (
           <div className="option" onClick={() => auth.signOut()}>
             SIGN OUT
           </div>

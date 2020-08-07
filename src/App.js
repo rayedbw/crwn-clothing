@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import Header from "./pages/header/header.component";
@@ -6,40 +7,41 @@ import SignInAndSignUp from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.com
 import HomePage from "./pages/homepage/hompage.component";
 import Shop from "./pages/shop/shop.component";
 import { auth, createUserProfile } from "./firebase/firebase.utils";
+import { setCurrentUser } from "./redux/user/user.actions";
 
 import "./App.css";
 
-const useAuthenticatedUser = () => {
-  const [authUser, setAuthUser] = useState(null);
+const useCurrentUser = () => {
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async authUser => {
-      if (authUser) {
-        const userRef = await createUserProfile(authUser);
+    const unsubscribe = auth.onAuthStateChanged(async currentUser => {
+      if (currentUser) {
+        const userRef = await createUserProfile(currentUser);
 
         userRef.onSnapshot(snapshot => {
-          setAuthUser({
-            id: snapshot.id,
-            ...snapshot.data(),
-          });
+          dispatch(
+            setCurrentUser({
+              id: snapshot.id,
+              ...snapshot.data(),
+            })
+          );
         });
       } else {
-        setAuthUser(null);
+        dispatch(setCurrentUser(null));
       }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  return authUser;
+  }, [dispatch]);
 };
 
 const App = () => {
-  const authUser = useAuthenticatedUser();
+  useCurrentUser();
 
   return (
     <Router>
-      <Header authUser={authUser} />
+      <Header />
       <Switch>
         <Route exact path="/">
           <HomePage />
