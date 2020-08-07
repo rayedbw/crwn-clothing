@@ -1,6 +1,11 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from "react-router-dom";
 
 import Header from "./pages/header/header.component";
 import SignInAndSignUp from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
@@ -13,11 +18,12 @@ import "./App.css";
 
 const useCurrentUser = () => {
   const dispatch = useDispatch();
+  const currentUser = useSelector(state => state.user.currentUser);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async currentUser => {
-      if (currentUser) {
-        const userRef = await createUserProfile(currentUser);
+    const unsubscribe = auth.onAuthStateChanged(async user => {
+      if (user) {
+        const userRef = await createUserProfile(user);
 
         userRef.onSnapshot(snapshot => {
           dispatch(
@@ -34,10 +40,12 @@ const useCurrentUser = () => {
 
     return () => unsubscribe();
   }, [dispatch]);
+
+  return currentUser;
 };
 
 const App = () => {
-  useCurrentUser();
+  const currentUser = useCurrentUser();
 
   return (
     <Router>
@@ -49,9 +57,13 @@ const App = () => {
         <Route exact path="/shop">
           <Shop />
         </Route>
-        <Route exact path="/sign-in">
-          <SignInAndSignUp />
-        </Route>
+        <Route
+          exact
+          path="/sign-in"
+          render={() =>
+            currentUser ? <Redirect to="/" /> : <SignInAndSignUp />
+          }
+        ></Route>
       </Switch>
     </Router>
   );
